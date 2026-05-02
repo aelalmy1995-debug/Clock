@@ -9,7 +9,6 @@ FRAME_TIME = 1 / FPS
 async def main(page: Page) -> None:
     page.vertical_alignment = MainAxisAlignment.CENTER
     page.horizontal_alignment = CrossAxisAlignment.CENTER
-    page.window.prevent_close = True
     page.fonts = {
             "bungee": "/fonts/bungee.ttf",
             "gravitas": "/fonts/gravitas.ttf"
