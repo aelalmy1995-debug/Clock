@@ -4,19 +4,6 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
-    inputs:
-      app_name:
-        description: 'اسم التطبيق (بدون مسافات)'
-        required: false
-        default: 'TimingApp'
-      package_name:
-        description: 'اسم الحزمة (package name)'
-        required: false
-        default: 'com.example.timing'
-      version:
-        description: 'رقم الإصدار (version)'
-        required: false
-        default: '1.0.0'
 
 jobs:
   build:
@@ -49,13 +36,8 @@ jobs:
       - name: بناء الـ APK
         run: |
           PACKAGES=$(cat requirements.txt | tr '\n' ' ')
-          flet build apk \
-            --name "${{ inputs.app_name }}" \
-            --package "${{ inputs.package_name }}" \
-            --version "${{ inputs.version }}" \
-            --include-packages "$PACKAGES" \
-            --no-android-splash \
-            --no-web-splash
+          echo "Building with packages: $PACKAGES"
+          flet build apk --name "TimingApp" --package "com.timing.app" --version "1.0.0" --include-packages "$PACKAGES" --no-android-splash --no-web-splash
 
       - name: رفع الـ APK كـ artifact
         uses: actions/upload-artifact@v4
