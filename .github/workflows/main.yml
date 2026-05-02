@@ -1,0 +1,60 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: ${{ github.workspace }}/android-sdk
+    steps:
+      - name: تحميل الكود
+        uses: actions/checkout@v4
+
+      - name: إعداد Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: إعداد Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: تثبيت Flet
+        run: |
+          pip install --upgrade pip
+          pip install flet
+          pip install -r requirements.txt
+
+      - name: إعداد Android SDK وقبول التراخيص
+        run: |
+          # تنزيل أدوات SDK
+          curl -o cmdline.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip cmdline.zip -d $ANDROID_HOME/cmdline-tools/
+          mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+          # قبول التراخيص
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          # تثبيت المكونات المطلوبة
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "platform-tools" "platforms;android-36" "build-tools;28.0.3"
+          # تعيين المتغيرات
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+
+      - name: قبول تراخيص Flutter
+        run: yes | flutter doctor --android-licenses
+
+      - name: بناء الـ APK باسم مميز
+        run: |
+          flet build apk --name "TimingApp" --verbose
+
+      - name: رفع الـ APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-APK
+          path: build/apk/*.apk
