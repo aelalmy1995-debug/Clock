@@ -28,10 +28,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Accept Android Licenses
+        run: |
+          # الموافقة على تراخيص الأندرويد سدك قبل البناء
+          yes | sdkmanager --licenses || true
+
       - name: Build APK
         run: |
-          # الأمر الآن بسيط جداً وسيعتمد على flet.yaml
-          yes | flet build apk
+          # تنفيذ البناء مع تمرير الموافقة لأي سؤال داخلي من Flutter
+          printf 'y\n' | flet build apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
