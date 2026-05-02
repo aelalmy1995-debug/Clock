@@ -1,0 +1,51 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  JAVA_VERSION: '17'
+  FLET_BUILD_NO_PROMPT: '1'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: تحميل الكود
+        uses: actions/checkout@v4
+
+      - name: إعداد Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: تثبيت أدوات النظام المطلوبة
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-17-jdk-headless
+
+      - name: تثبيت مكتبات Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install flet
+          pip install -r requirements.txt
+
+      - name: إعداد Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: بناء الـ APK
+        run: |
+          echo "y" | flet build apk --verbose
+
+      - name: رفع الـ APK كـ artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-APK
+          path: build/apk/*.apk
