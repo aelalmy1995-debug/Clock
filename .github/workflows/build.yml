@@ -5,6 +5,11 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+env:
+  PYTHON_VERSION: '3.11'
+  JAVA_VERSION: '17'
+  FLET_BUILD_NO_PROMPT: '1'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,28 +21,33 @@ jobs:
       - name: إعداد Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: تثبيت أدوات النظام المطلوبة
+      - name: إعداد Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: تثبيت أدوات النظام
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-17-jdk-headless
 
+      - name: إعداد Android SDK وقبول التراخيص
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          yes | flutter doctor --android-licenses || true
+
       - name: تثبيت مكتبات Python
         run: |
           python -m pip install --upgrade pip
-          pip install flet[all]
+          pip install flet
           pip install -r requirements.txt
-
-      - name: عرض إصدار Flet
-        run: |
-          flet --version
 
       - name: بناء الـ APK
         run: |
-          PACKAGES=$(cat requirements.txt | tr '\n' ' ')
-          echo "Building with packages: $PACKAGES"
-          flet build apk --name "TimingApp" --package "com.timing.app" --version "1.0.0" --include-packages "$PACKAGES" --no-android-splash --no-web-splash
+          echo "y" | flet build apk --verbose
 
       - name: رفع الـ APK كـ artifact
         uses: actions/upload-artifact@v4
