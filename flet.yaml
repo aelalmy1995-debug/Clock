@@ -1,0 +1,6 @@
+# flet.yaml
+project:
+  name: "MyClockApp"
+  org: "com.example.clock"
+  version: "1.0.0"
+ 
